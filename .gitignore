@@ -9,3 +9,4 @@ _ReSharper.Caches/
 build
 dist
 pvporcupine.egg-info
+venv

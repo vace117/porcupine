@@ -26,12 +26,13 @@ using namespace std;
 
 // Change these to match your environment!
 const char MODEL_PATH[] = "../../lib/common/porcupine_params.pv";
-const char KEYWORD_PATH[] = "../../resources/keyword_files/pineapple_linux.ppn";
+const char KEYWORD_PATH[] = "../../resources/keyword_files/linux/computer_linux.ppn";
+
 float sensitivity = 0.5f;
 
 static pv_porcupine_object_t *porcupineObject;
 
-const char snd_device[] = "default";
+const char snd_device[] = "plughw:3,0";
 
 snd_pcm_t* capture_handle;
 snd_pcm_hw_params_t* hw_params;
@@ -183,7 +184,7 @@ int close_connections()
 
 int main(int argc, char *argv[])
 {
-	cout << "Open default soundcard" << endl;
+	cout << "Opening soundcard " << snd_device << endl;
 	init_soundcard();
 
 	cout << "Init Porcupine" << endl;
