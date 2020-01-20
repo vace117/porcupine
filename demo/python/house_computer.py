@@ -25,6 +25,8 @@ import numpy as np
 import pyaudio
 import soundfile
 
+import requests
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../binding/python'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../resources/util/python'))
 
@@ -32,7 +34,7 @@ from porcupine import Porcupine
 from util import *
 
 
-class PorcupineDemo(Thread):
+class HouseComputer(Thread):
     """
     Demo class for wake word detection (aka Porcupine) library. It creates an input audio stream from a microphone,
     monitors it, and upon detecting the specified wake word(s) prints the detection time and index of wake word on
@@ -62,7 +64,7 @@ class PorcupineDemo(Thread):
         :param output_path: If provided recorded audio will be stored in this location at the end of the run.
         """
 
-        super(PorcupineDemo, self).__init__()
+        super(HouseComputer, self).__init__()
 
         self._library_path = library_path
         self._model_file_path = model_file_path
@@ -119,7 +121,7 @@ class PorcupineDemo(Thread):
 
                 result = porcupine.process(pcm)
                 if num_keywords == 1 and result:
-                    print('[%s] detected keyword' % str(datetime.now()))
+                    self.hotword_detected()
                 elif num_keywords > 1 and result >= 0:
                     print('[%s] detected %s' % (str(datetime.now()), keyword_names[result]))
 
@@ -152,6 +154,14 @@ class PorcupineDemo(Thread):
             print(', '.join("'%s': '%s'" % (k, str(info[k])) for k in cls._AUDIO_DEVICE_INFO_KEYS))
 
         pa.terminate()
+    
+    # Sends a REST message to the NodeJS code that activates Google Cloud speech-to-text and executes
+    # house control commands
+    #
+    def hotword_detected(self):
+        print('[%s] detected keyword' % str(datetime.now()))
+        # response = requests.post('http://localhost:6666', data = {'action':'BEGIN_COMMAND_RECOGNITION'})
+        # response.raise_for_status()
 
 
 def main():
@@ -178,7 +188,7 @@ def main():
     args = parser.parse_args()
 
     if args.show_audio_devices_info:
-        PorcupineDemo.show_audio_devices_info()
+        HouseComputer.show_audio_devices_info()
     else:
         if args.keyword_file_paths is None:
             if args.keywords is None:
@@ -199,7 +209,7 @@ def main():
         else:
             sensitivities = [float(x) for x in args.sensitivities.split(',')]
 
-        PorcupineDemo(
+        HouseComputer(
             library_path=args.library_path,
             model_file_path=args.model_file_path,
             keyword_file_paths=keyword_file_paths,
